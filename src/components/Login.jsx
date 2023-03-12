@@ -7,19 +7,29 @@ import shareVideo from '../assets/share.mp4';
 import logo from '../assets/logowhite.png';
 import jwt_decode from "jwt-decode";
 
+import { client } from "../client";
+
 const Login = () => {
+    const navigate = useNavigate();
     const responseGoogle = (response) => {
         console.log(response.credential);
         var decoded = jwt_decode(response.credential);
+        console.log(decoded);
         localStorage.setItem('user', JSON.stringify(decoded));
-        const{ name, email, picture} = decoded;
+        const { name, sub, picture } = decoded;
 
         const doc = {
-            _id: email,
+            _id: sub,
             _type: 'user',
             userName: name,
             image: picture,
         }
+
+
+        client.createIfNotExists(doc)
+            .then(() => {
+                navigate('/', { replace: true})
+            })
     }
 
     return (
@@ -39,7 +49,7 @@ const Login = () => {
                         <img src={logo} width='130px' alt='logo' />
                     </div>
                     <div className='shadow-2x1'>
-                        <GoogleOAuthProvider clientId= {process.env.REACT_APP_GOOGLE_API_TOKEN}>
+                        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_API_TOKEN}>
                             <GoogleLogin
                                 render={(renderProps) => (
                                     <button
